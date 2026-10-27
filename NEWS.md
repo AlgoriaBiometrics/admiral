@@ -63,7 +63,7 @@ were updated to add the term `"Eosinophilia"` (#3191).
 
 - Corrected the documentation of `compute_qual_imputation()` to describe the
 decimal offset, the direction of shifts for strict inequalities, and the use of
-`factor`. Added vector examples showing both methods and unshifted inclusive
+`factor`. Added vector examples showing both methods and unchanged inclusive
 qualifiers. The calculations are unchanged. (#2922)
 
 - Corrected the `ADLB` template label for `PARAMCD = "CK"` from `"Creatinine Kinase"` to `"Creatine Kinase"` (#3170).
