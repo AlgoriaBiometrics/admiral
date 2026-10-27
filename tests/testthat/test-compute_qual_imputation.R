@@ -98,6 +98,29 @@ test_that("compute_qual_imputation Test 24: Method 2, <= Qualifier", {
   expect_equal(compute_qual_imputation("<=40", imputation_type = 2), 40)
 })
 
+## Test 24a: documented vector examples ----
+test_that("compute_qual_imputation Test 24a: documented vector examples", {
+  values <- c("<40", ">40.1", "<=40", ">=40.1", "3")
+
+  expect_equal(compute_qual_imputation(values), c(40, 40.1, 40, 40.1, 3))
+  expect_equal(
+    compute_qual_imputation(values, factor = 0.5),
+    c(39.5, 40.6, 40, 40.1, 3)
+  )
+  expect_equal(
+    compute_qual_imputation(values, imputation_type = 2),
+    c(39, 40.2, 40, 40.1, 3)
+  )
+  expect_equal(
+    compute_qual_imputation(values, imputation_type = 2, factor = 100),
+    c(39, 40.2, 40, 40.1, 3)
+  )
+  expect_equal(
+    compute_qual_imputation(c(">40.1", ">40.10"), imputation_type = 2),
+    c(40.2, 40.11)
+  )
+})
+
 ############
 
 test_that("compute_qual_imputation Test 25: Method 2, No Qualifier", {

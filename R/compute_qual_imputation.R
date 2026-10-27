@@ -35,22 +35,41 @@ compute_qual_imputation_dec <- function(character_value_decimal) {
   unname(decimal)
 }
 
-#' Function to Impute Values When Qualifier Exists in Character Result
+#' Impute Numeric Values from Character Results with Qualifiers
 #'
-#' Derive an imputed value
+#' Converts character results to numeric values and optionally shifts results
+#' with strict inequality qualifiers.
 #'
-#' @param character_value Character version of value to be imputed
-#' @param imputation_type (default value=1)
-#' Valid Values:
-#' 1: Strip <, >, = and convert to numeric.
-#' 2: imputation_type=1 and if the character value contains a < or >, the number of
-#' of decimals associated with the character value is found and then a factor of
-#' 1/10^(number of decimals + 1) will be added/subtracted from the numeric value.
-#' If no decimals exists, a factor of 1/10 will be added/subtracted from the value.
-#' @param factor Numeric value (default=0), when using `imputation_type` = 1, this
-#' value can be added or subtracted when the qualifier is removed.
+#' @param character_value Character vector of numeric results, optionally prefixed
+#' with a qualifier, for example, `c("<40", ">=40.1", "3")`.
 #'
-#' @return The imputed value
+#' @param imputation_type Method used to derive numeric results:
+#'
+#' - `1`: Remove qualifiers and use `factor` as the additive offset for strict
+#'   inequalities.
+#' - `2`: Remove qualifiers and use the decimal precision of each original
+#'   character result as the additive offset. See Details.
+#'
+#' @permitted `1`, `2`
+#'
+#' @param factor Numeric offset used when `imputation_type = 1`. It is added for
+#' results with `>` and subtracted for results with `<`. It is ignored when
+#' `imputation_type = 2`.
+#'
+#' @details
+#' The characters `<`, `>`, and `=` are removed before conversion to numeric.
+#' For results with a strict `>` qualifier, the offset is added; for results with
+#' a strict `<` qualifier, it is subtracted. Results with `>=` or `<=`, and results
+#' without an inequality qualifier, are converted without a shift.
+#'
+#' With `imputation_type = 2`, the offset is \eqn{10^{-d}}, where \eqn{d} is the
+#' number of decimal places in the original character result, including trailing
+#' zeros. For integer results, the offset is 1. For example, `"<40"` becomes 39,
+#' `">40.1"` becomes 40.2, and `">40.10"` becomes 40.11.
+#'
+#' The appropriate imputation rule depends on the analysis specification.
+#'
+#' @return A numeric vector of imputed results.
 #'
 #' @export
 #'
@@ -59,8 +78,13 @@ compute_qual_imputation_dec <- function(character_value_decimal) {
 #' @family com_bds_findings
 #'
 #' @examples
-#' compute_qual_imputation("<40")
-#' compute_qual_imputation(c("3", ">30.2"))
+#' values <- c("<40", ">40.1", "<=40", ">=40.1", "3")
+#' compute_qual_imputation(values)
+#' compute_qual_imputation(values, factor = 0.5)
+#' compute_qual_imputation(values, imputation_type = 2)
+#'
+#' # Trailing zeros retain the reported precision
+#' compute_qual_imputation(c(">40.1", ">40.10"), imputation_type = 2)
 compute_qual_imputation <- function(character_value, imputation_type = 1, factor = 0) {
   clean_value <- character_value
 

@@ -2,45 +2,67 @@
 % Please edit documentation in R/compute_qual_imputation.R
 \name{compute_qual_imputation}
 \alias{compute_qual_imputation}
-\title{Function to Impute Values When Qualifier Exists in Character Result}
+\title{Impute Numeric Values from Character Results with Qualifiers}
 \usage{
 compute_qual_imputation(character_value, imputation_type = 1, factor = 0)
 }
 \arguments{
-\item{character_value}{Character version of value to be imputed
+\item{character_value}{Character vector of numeric results, optionally prefixed
+with a qualifier, for example, \code{c("<40", ">=40.1", "3")}.
 
 \describe{
 \item{Default value}{none}
 }}
 
-\item{imputation_type}{(default value=1)
-Valid Values:
-1: Strip <, >, = and convert to numeric.
-2: imputation_type=1 and if the character value contains a < or >, the number of
-of decimals associated with the character value is found and then a factor of
-1/10^(number of decimals + 1) will be added/subtracted from the numeric value.
-If no decimals exists, a factor of 1/10 will be added/subtracted from the value.
+\item{imputation_type}{Method used to derive numeric results:
+\itemize{
+\item \code{1}: Remove qualifiers and use \code{factor} as the additive offset for strict
+inequalities.
+\item \code{2}: Remove qualifiers and use the decimal precision of each original
+character result as the additive offset. See Details.
+}
 
 \describe{
+\item{Permitted values}{\code{1}, \code{2}}
 \item{Default value}{\code{1}}
 }}
 
-\item{factor}{Numeric value (default=0), when using \code{imputation_type} = 1, this
-value can be added or subtracted when the qualifier is removed.
+\item{factor}{Numeric offset used when \code{imputation_type = 1}. It is added for
+results with \code{>} and subtracted for results with \code{<}. It is ignored when
+\code{imputation_type = 2}.
 
 \describe{
 \item{Default value}{\code{0}}
 }}
 }
 \value{
-The imputed value
+A numeric vector of imputed results.
 }
 \description{
-Derive an imputed value
+Converts character results to numeric values and optionally shifts results
+with strict inequality qualifiers.
+}
+\details{
+The characters \code{<}, \code{>}, and \code{=} are removed before conversion to numeric.
+For results with a strict \code{>} qualifier, the offset is added; for results with
+a strict \code{<} qualifier, it is subtracted. Results with \code{>=} or \code{<=}, and results
+without an inequality qualifier, are converted without a shift.
+
+With \code{imputation_type = 2}, the offset is \eqn{10^{-d}}, where \eqn{d} is the
+number of decimal places in the original character result, including trailing
+zeros. For integer results, the offset is 1. For example, \code{"<40"} becomes 39,
+\code{">40.1"} becomes 40.2, and \code{">40.10"} becomes 40.11.
+
+The appropriate imputation rule depends on the analysis specification.
 }
 \examples{
-compute_qual_imputation("<40")
-compute_qual_imputation(c("3", ">30.2"))
+values <- c("<40", ">40.1", "<=40", ">=40.1", "3")
+compute_qual_imputation(values)
+compute_qual_imputation(values, factor = 0.5)
+compute_qual_imputation(values, imputation_type = 2)
+
+# Trailing zeros retain the reported precision
+compute_qual_imputation(c(">40.1", ">40.10"), imputation_type = 2)
 }
 \seealso{
 BDS-Findings Functions that returns a vector:
